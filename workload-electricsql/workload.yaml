@@ -1,0 +1,39 @@
+apiVersion: compute.datumapis.com/v1alpha
+kind: Workload
+metadata:
+  name: electricsql
+spec:
+  template:
+    spec:
+      runtime:
+        resources:
+          instanceType: datumcloud/d1-standard-2
+        sandbox:
+          containers:
+            - name: electric
+              image: electricsql/electric
+              ports:
+                - name: http
+                  port: 3000
+              env:
+                - name: ELECTRIC_INSECURE
+                  value: "true"
+                - name: DATABASE_URL
+                  value: "postgresql://#DBUSERNAME:#DBPASSWORD@#DBHOST/#DBNAME?sslmode=require"
+
+      networkInterfaces:
+      - network:
+          name: demo-network
+        networkPolicy:
+          ingress:
+            - ports:
+              - port: 3000
+              from:
+                - ipBlock:
+                    cidr: 0.0.0.0/0
+  placements:
+  - name: us
+    cityCodes:
+    - DFW
+    scaleSettings:
+      minReplicas: 1

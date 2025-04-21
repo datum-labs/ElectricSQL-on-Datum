@@ -1,0 +1,33 @@
+apiVersion: compute.datumapis.com/v1alpha
+kind: Workload
+metadata:
+  name: electricsql-frontend
+spec:
+  template:
+    spec:
+      runtime:
+        resources:
+          instanceType: datumcloud/d1-standard-2
+        sandbox:
+          containers:
+            - name: electricsql-frontend
+              image: thomasdaly5/electric-frontend:v1.3
+              ports:
+                - name: http
+                  port: 3000
+      networkInterfaces:
+      - network:
+          name: demo-network
+        networkPolicy:
+          ingress:
+            - ports:
+              - port: 3000
+              from:
+                - ipBlock:
+                    cidr: 0.0.0.0/0
+  placements:
+  - name: us
+    cityCodes:
+    - DFW
+    scaleSettings:
+      minReplicas: 1
