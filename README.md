@@ -23,6 +23,10 @@ The Kustomize manifests in this repository deploy the following:
 
 ## Deployment
 
+### Clone Repository
+
+- Clone this repository locally to have Kustomize files available for modification to your environment.
+
 ### Prepare Kustomize Manifests
 
 - Deploy Locations and Networks: Adjust `location-network/locations.yaml` to your preferences for a GCP backed compute location. If we decided to alter location city codes, you will need to make corresponding updates to the `workload-*/workload.yaml` manifests.
