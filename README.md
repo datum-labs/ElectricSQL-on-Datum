@@ -56,3 +56,9 @@ The Kustomize manifests in this repository deploy the following:
 - See your deployment in [Datum Cloud Portal](https://cloud.datum.net/login).
 - Enable TLS/SSL on your Datum Gateway with your own domain name via CNAME and a certificate from Let's Encrypt.
 - Setup a Telemetry Exporter for your deployment to Grafana Cloud to get metrics from your Datum deployment. 
+
+## Screenshots
+
+![Datum Workloads](screenshots/datum-cloud-workloads.png)
+![Datum Workload Details](screenshots/datum-cloud-workload-electricsql.png)
+![Datum Gateways](screenshots/datum-cloud-gateways.png)
