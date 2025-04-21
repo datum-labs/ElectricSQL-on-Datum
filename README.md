@@ -48,7 +48,7 @@ The Kustomize manifests in this repository deploy the following:
 
 ## Test your ElectricSQL Deployment
 
-- Use a browser to naviate to the FQDN listed in `kubectl get gateways -o wide`. The ElectricSQL demo React application should load, displaying the sample data from the `scores` table in JSON format.
+- Use a browser to navigate to the FQDN listed in `kubectl get gateways -o wide`. The ElectricSQL demo React application should load, displaying the sample data from the `scores` table in JSON format.
 - Use a PostgresSQL client to modify the data in the `scores` table, noting real time updates to the JSON structure in your browser window.
 
 ## Where to go from here?
