@@ -1,7 +1,0 @@
-apiVersion: networking.datumapis.com/v1alpha
-kind: Network
-metadata:
-  name: demo-network
-spec:
-  ipam:
-    mode: Auto
