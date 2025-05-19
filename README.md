@@ -1,64 +1,102 @@
-# ElectricSQL-on-Datum
-Deploy ElectricSQL on Datum with a simple Kustomize Manifest
+# ElectricSQL on Datum
 
-[Electric](https://electric-sql.com/) builds sync for making apps awesome.
+## Pre-requisites
 
-This guide is based upon Electric's [quickstart](https://electric-sql.com/docs/quickstart).
+### Datum Account
 
-## Requirements
+* If you don't already have a Datum account, you can sign up for one at <https://cloud.datum.net>
 
-The following pre-requisites are required to deploy ElectricSQL on Datum:
+### Tools and Project Setup
 
-- Working Datum CLI tools [documentation](https://docs.datum.net/docs/tasks/tools/)
-- A Datum project with compute backed by GCP [documentation](https://docs.datum.net/docs/tasks/create-project/)
-- PostgresSQL instance with Logical Replication enabled (consider your own PostgresSQL, Neon, or Supabase). 
-- The docker container providing the React frontend app has been built to query data from ElectricSQL's sample data in the `scores` table. Again, see Electric's [quickstart](https://electric-sql.com/docs/quickstart) for data model and sample data.
+If this is your first time using Datum, run through the following tutorials to set up your tools and create a project:
 
-## Architecture
+* Set Up Tools <https://docs.datum.net/docs/tasks/tools/>
+  * We’ll need kubectl, datumctl, and an API key
+* Create a Project <https://docs.datum.net/docs/tasks/create-project>
+  * Make sure to get and switch to the kubectl context for your project.
 
-The Kustomize manifests in this repository deploy the following:
+### Set up GCP integration with Datum
 
-- ElectricSQL backend hosted in GCP with the Datum Gateway (Anycast Proxy) as global ingress.
-- ElectricSQL's demo React application as a frontend, also hosted in GCP with the same Datum Gateway as a global ingress service.
+* Follow the instructions in the GCP integration guide to set up your GCP integration with Datum.
+  * <https://docs.datum.net/docs/tutorials/infra-provider-gcp/>
+  * We'll be using the Location `my-gcp-us-south1-a` and Network `default` from the tutorial.
 
-## Deployment
+### What else you'll need
 
-### Clone Repository
+* Kubectl configured to use the context of your Datum project
+* Postgres client for testing
+* _Optional_: Grafana Cloud account for telemetry exporting
 
-- Clone this repository locally to have Kustomize files available for modification to your environment.
+## Tutorial Walkthrough
 
-### Prepare Kustomize Manifests
+### Deploy postgres
 
-- Deploy Locations and Networks: Adjust `location-network/locations.yaml` to your preferences for a GCP backed compute location. If we decided to alter location city codes, you will need to make corresponding updates to the `workload-*/workload.yaml` manifests.
+* We’ve included some initial database contents in a configmap that will load automatically when you deploy the workload.
+* `kubectl apply -f postgres/`
+* Default password is “my-secret-password”
+* Run `kubectl get workload -w` and wait for it to say `Available true`
+* Get your postgres instance’s IP address
+  * `kubectl get instance -o wide` and look for the ‘External IP’ column.
 
-- Define your PostgresSQL backend of choice in `workload-electricsql/workload.yaml. 
+### Deploy Electric SQL backend and front end
 
-### Deploy using Kustomize
+* Edit the `electricsql/electricsql.yaml` file and replace “#MYPOSTGRESIP” with your postgres instance’s external IP address.
+* Run `kubectl apply -f electricsql/` to deploy ElectricSQL and the frontend:
+* Run `kubectl get workload -w` and wait for it to say `Available true`
 
-- Deploy Networks and Locations with `kubectl apply -k location-network`
-- Deploy ElectricSQL with `kubectl apply -k workload-electricsql`. You can monitor your deployment with `kubectl get instances`.
-- Deploy the ElectricSQL demo React app with `kubectl apply -k workload-frontend`. You can monitor your deployment with `kubectl get instances`.
+### Deploy gateways
 
-### Update Gateway Endpoints with Backend IPs
+* Use `kubectl get instances -o wide` to locate the External IPs for ElectricSQL and Frontend instances.
+* Update `gateway/endpoints.yaml` with External IPs for ElectricSQL and Frontend EndpointSlices
+* Deploy the Datum Gateway using `kubectl apply -f gateway/`.
 
-- Use `kubectl get instances -o wide` to locate the External IPs for ElectricSQL and Frontend instances.
-- Update `gateway/endpoints.yaml` with External IPs for ElectricSQL and Frontend EndpointSlices
-- Deploy the Datum Gateway using `kubectl apply -k gateway`.
-- Discover your assigned Datum Gateway endpoint using `kubectl get gateways -o wide`.
+### Test your ElectricSQL Deployment
 
-## Test your ElectricSQL Deployment
+* Use a browser to navigate to the FQDN listed in `kubectl get gateways -o wide`
+* The ElectricSQL demo React application should load, displaying the sample data from the scores table in JSON format.
+* Use a PostgresSQL client to modify the data in the scores table, noting real time updates to the JSON structure in your browser window.
 
-- Use a browser to navigate to the FQDN listed in `kubectl get gateways -o wide`. The ElectricSQL demo React application should load, displaying the sample data from the `scores` table in JSON format.
-- Use a PostgresSQL client to modify the data in the `scores` table, noting real time updates to the JSON structure in your browser window.
+## Going Further
 
-## Where to go from here?
+### Telemetry Exports to Grafana
 
-- See your deployment in [Datum Cloud Portal](https://cloud.datum.net/login).
-- Enable TLS/SSL on your Datum Gateway with your own domain name via CNAME and a certificate from Let's Encrypt.
-- Setup a Telemetry Exporter for your deployment to Grafana Cloud to get metrics from your Datum deployment. 
+* Create a Hosted Prometheus metrics token on Grafana Cloud
+  * Connections -> Add new connection -> Hosted Prometheus metrics
 
-## Screenshots
+* Choose “from my local prometheus server”, “send metrics from a single Prometheus instance” and “Directly”
+* Name your token and click create. You’ll be showing something similar to the below:
 
-![Datum Workloads](screenshots/datum-cloud-workloads.png)
-![Datum Workload Details](screenshots/datum-cloud-workload-electricsql.png)
-![Datum Gateways](screenshots/datum-cloud-gateways.png)
+```yaml
+global:
+scrape_interval: 60s
+remote_write:
+  - url: <https://prometheus-my-end-point.grafana.net/api/prom/push>
+    basic_auth:
+      username: 2448961
+      password: glc_longrandomtoken
+scrape_configs:
+  - job_name: node
+    static_configs:
+      - targets: ["localhost:9090"]
+
+```
+
+* Make note of the username, password, and URL fields.
+* Edit the `telemetry/grafana-cloud-credentials.yaml` file and replace the username and password with the values from Grafana Cloud. Use quotes around the username field since if it's just a number. It'll look something like this:
+
+   ```yaml
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: grafana-cloud-credentials
+  type: kubernetes.io/basic-auth
+  stringData:
+    username: "12345678"
+    password: "glc_longrandomtoken"
+  ```
+  
+* Edit the `telemetry/grafana-cloud-exporter.yaml` file and replace #GRAFANA_CLOUD_ENDPOINT with the URL from Grafana Cloud.
+
+* Run `kubectl apply -f telemetry`
+* Go to Drilldown->Metrics on Grafana Cloud and you should now see metrics prefixed with “datum_” showing up.
+* Explore and see how your gateways are doing.
