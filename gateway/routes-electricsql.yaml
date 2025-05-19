@@ -4,21 +4,21 @@ metadata:
   name: electricsql-route
 spec:
   parentRefs:
-  - name: electricsql-gateway
-    kind: Gateway
+    - name: electricsql-gateway
+      kind: Gateway
   rules:
     - matches:
-      - path:
-          type: PathPrefix
-          value: /electricsql
+        - path:
+            type: PathPrefix
+            value: /electricsql
       timeouts:
         request: 25s
         backendRequest: 25s
       backendRefs:
-      - group: discovery.k8s.io
-        kind: EndpointSlice
-        name: electricsql-endpoint
-        port: 3000
+        - group: discovery.k8s.io
+          kind: EndpointSlice
+          name: electricsql-endpoint
+          port: 3000
       filters:
         - type: URLRewrite
           urlRewrite:
@@ -30,4 +30,3 @@ spec:
       #    cors:
       #      allowHeaders:
       #      - "*"
-          
