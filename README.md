@@ -17,7 +17,9 @@ If this is your first time using Datum, run through the following tutorials to s
 
 ### Set up GCP integration with Datum
 
-* Follow the instructions in the GCP integration guide to set up your GCP integration with Datum.
+* Follow the instructions in the GCP integration guide to set up your GCP
+integration with Datum up through the "Create a Project" section. You do not
+need to do the "Create a Workload" step.
   * <https://docs.datum.net/docs/tutorials/infra-provider-gcp/>
   * We'll be using the Location `my-gcp-us-south1-a` and Network `default` from the tutorial.
 
@@ -29,10 +31,22 @@ If this is your first time using Datum, run through the following tutorials to s
 
 ## Tutorial Walkthrough
 
+### Clone this repository
+
+* Clone this repository to your local machine
+
+```shell
+git clone https://github.com/datum-labs/ElectricSQL-on-Datum
+cd ElectricSQL-on-Datum
+```
+
 ### Deploy postgres
 
-* We’ve included some initial database contents in a configmap that will load automatically when you deploy the workload.
-* `kubectl apply -f postgres/`
+* Run `kubectl apply -f postgres/`
+  * This will load all the files inside the postgres directory.
+  * `postgres-init-sql.yaml` will create a configmap that will be used as the
+  source of a postgres init script that will load some initial database contents.
+  * The workload deployment is in `postgres.yaml`.
 * Default password is “my-secret-password”
 * Run `kubectl get workload -w` and wait for it to say `Available true`
 * Get your postgres instance’s IP address
@@ -47,7 +61,38 @@ If this is your first time using Datum, run through the following tutorials to s
 ### Deploy gateways
 
 * Use `kubectl get instances -o wide` to locate the External IPs for ElectricSQL and Frontend instances.
-* Update `gateway/endpoints.yaml` with External IPs for ElectricSQL and Frontend EndpointSlices
+* Update `gateway/endpoints.yaml` with External IPs for ElectricSQL and Frontend EndpointSlices. For example if your Electric SQL External IP is 1.2.3.4:
+
+  ```yaml
+  endpoints:
+    - addresses:
+        -  #ELECTRICSQLIP
+  ```
+
+  becomes
+
+  ```yaml
+  endpoints:
+    - addresses:
+        -  1.2.3.4
+  ```
+
+  Similarly, if your Electric SQL Frontend External IP is 5.6.7.8:
+
+  ```yaml
+  endpoints:
+    - addresses:
+        -  #ELECTRICSQLFRONTENDIP
+  ```
+
+  becomes
+
+  ```yaml
+  endpoints:
+    - addresses:
+        -  5.6.7.8
+  ```
+
 * Deploy the Datum Gateway using `kubectl apply -f gateway/`.
 
 ### Test your ElectricSQL Deployment
@@ -95,7 +140,7 @@ scrape_configs:
     password: "glc_longrandomtoken"
   ```
   
-* Edit the `telemetry/grafana-cloud-exporter.yaml` file and replace #GRAFANA_CLOUD_ENDPOINT with the URL from Grafana Cloud.
+* Edit the `telemetry/exportpolicy.yaml` file and replace #GRAFANA_CLOUD_ENDPOINT with the URL from Grafana Cloud.
 
 * Run `kubectl apply -f telemetry`
 * Go to Drilldown->Metrics on Grafana Cloud and you should now see metrics prefixed with “datum_” showing up.

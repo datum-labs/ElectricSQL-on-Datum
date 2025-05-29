@@ -5,7 +5,7 @@ addressType: IPv4
 apiVersion: discovery.k8s.io/v1
 endpoints:
   - addresses:
-  - # ELECTRICSQL EXTERNAL IP HERE
+      -  #ELECTRICSQLIP
     conditions:
       ready: true
       serving: true
@@ -17,12 +17,11 @@ ports:
 ---
 kind: EndpointSlice
 metadata:
-  name: frontend-endpoint
 addressType: IPv4
 apiVersion: discovery.k8s.io/v1
 endpoints:
   - addresses:
-  - # ELECTRICSQL FRONTEND EXTERNAL IP HERE
+      -  #ELECTRICSQLFRONTENDIP
     conditions:
       ready: true
       serving: true
