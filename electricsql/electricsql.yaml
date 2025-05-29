@@ -19,8 +19,8 @@ spec:
                 - name: ELECTRIC_INSECURE
                   value: "true"
                 - name: DATABASE_URL
-                  value: "postgresql://postgres:my-secret-password@#MYIPADDRESS/postgres"
-                  # Replace #MYIPADDRESS with the actual IP address of the Postgres instance's external IP
+                  value: "postgresql://postgres:my-secret-password@#MYPOSTGRESIP/postgres"
+                  # Replace #MYPOSTGRESIP with the actual IP address of the Postgres instance's external IP
 
       networkInterfaces:
         - network:
