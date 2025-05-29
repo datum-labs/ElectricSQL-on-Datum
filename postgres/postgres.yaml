@@ -1,0 +1,45 @@
+apiVersion: compute.datumapis.com/v1alpha
+kind: Workload
+metadata:
+  name: postgres
+spec:
+  template:
+    spec:
+      runtime:
+        resources:
+          instanceType: datumcloud/d1-standard-2
+        sandbox:
+          containers:
+            - name: postgres
+              image: postgres:alpine
+              ports:
+                - name: postgres
+                  port: 5432
+                  protocol: TCP
+              env:
+                - name: POSTGRES_PASSWORD
+                  value: my-secret-password
+                - name: POSTGRES_INITDB_ARGS
+                  value: "-c wal_level=logical"
+              volumeAttachments:
+                - name: initsql
+                  mountPath: /docker-entrypoint-initdb.d/
+      networkInterfaces:
+        - network:
+            name: default
+          networkPolicy:
+            ingress:
+              - ports:
+                  - port: 5432
+                from:
+                  - ipBlock:
+                      cidr: 0.0.0.0/0
+      volumes:
+        - name: initsql
+          configMap:
+            name: postgres-init-sql
+  placements:
+    - name: us
+      cityCodes: ["DFW"]
+      scaleSettings:
+        minReplicas: 1

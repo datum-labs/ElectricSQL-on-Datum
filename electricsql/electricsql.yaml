@@ -1,0 +1,40 @@
+apiVersion: compute.datumapis.com/v1alpha
+kind: Workload
+metadata:
+  name: electricsql
+spec:
+  template:
+    spec:
+      runtime:
+        resources:
+          instanceType: datumcloud/d1-standard-2
+        sandbox:
+          containers:
+            - name: electric
+              image: electricsql/electric:latest
+              ports:
+                - name: http
+                  port: 3000
+              env:
+                - name: ELECTRIC_INSECURE
+                  value: "true"
+                - name: DATABASE_URL
+                  value: "postgresql://postgres:my-secret-password@#MYPOSTGRESIP/postgres"
+                  # Replace #MYPOSTGRESIP with the actual IP address of the Postgres instance's external IP
+
+      networkInterfaces:
+        - network:
+            name: default
+          networkPolicy:
+            ingress:
+              - ports:
+                  - port: 3000
+                from:
+                  - ipBlock:
+                      cidr: 0.0.0.0/0
+  placements:
+    - name: us
+      cityCodes:
+        - DFW
+      scaleSettings:
+        minReplicas: 1

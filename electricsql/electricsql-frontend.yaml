@@ -16,18 +16,18 @@ spec:
                 - name: http
                   port: 3000
       networkInterfaces:
-      - network:
-          name: demo-network
-        networkPolicy:
-          ingress:
-            - ports:
-              - port: 3000
-              from:
-                - ipBlock:
-                    cidr: 0.0.0.0/0
+        - network:
+            name: default
+          networkPolicy:
+            ingress:
+              - ports:
+                  - port: 3000
+                from:
+                  - ipBlock:
+                      cidr: 0.0.0.0/0
   placements:
-  - name: us
-    cityCodes:
-    - DFW
-    scaleSettings:
-      minReplicas: 1
+    - name: us
+      cityCodes:
+        - DFW
+      scaleSettings:
+        minReplicas: 1
