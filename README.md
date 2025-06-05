@@ -11,7 +11,7 @@ The following pre-requisites are required to deploy ElectricSQL on Datum:
 
 - Working Datum CLI tools [documentation](https://docs.datum.net/docs/tasks/tools/)
 - A Datum project with compute backed by GCP [documentation](https://docs.datum.net/docs/tasks/create-project/)
-- PostgresSQL instance with Logical Replication enabled (consider your own PostgresSQL, Neon, or Supabase). 
+- PostgresSQL instance with Logical Replication enabled (consider your own PostgresSQL or Neon). 
 - The docker container providing the React frontend app has been built to query data from ElectricSQL's sample data in the `scores` table. Again, see Electric's [quickstart](https://electric-sql.com/docs/quickstart) for data model and sample data.
 
 ## Architecture
