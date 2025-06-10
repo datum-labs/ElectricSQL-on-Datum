@@ -23,6 +23,35 @@ The Kustomize manifests in this repository deploy the following:
 
 ## Deployment
 
+### Prepare Database
+
+- Create a database (in PostgresSQL) or a Project (in Neon).
+- Prepare a PostgresSQL instance at a location of your choice. You will need to obtain full credentials including username, password, hostname/IP, and port number. Use of TLS is strongly suggested.
+- Postgres must have [logical replication enabled](https://www.postgresql.org/docs/current/logical-replication-config.html). You also need to connect as a database role that has the REPLICATION attribute.
+- If using NeonDB, enable Logical Replication in your project settings.
+
+### Populate Sample Data
+
+Using standard database tools, create and populate a new table, called `scores` with Electric's sample data avaialble from their [quickstart](https://electric-sql.com/docs/quickstart).
+
+Create the table:
+```
+CREATE TABLE scores (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255),
+  value FLOAT
+);
+```
+Populate the table:
+```
+INSERT INTO scores (name, value) VALUES
+  ('Alice', 3.14),
+  ('Bob', 2.71),
+  ('Charlie', -1.618),
+  ('David', 1.414),
+  ('Eve', 0);
+```
+
 ### Clone Repository
 
 - Clone this repository locally to have Kustomize files available for modification to your environment.
